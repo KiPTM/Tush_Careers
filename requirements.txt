@@ -1,3 +1,4 @@
 Flask
 gunicorn
 Flask-SQLAlchemy
+flask_bcrypt
