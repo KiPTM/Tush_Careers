@@ -1,4 +1,3 @@
-# app.py
 from flask import Flask, render_template, redirect, url_for, flash, request, jsonify
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
@@ -33,8 +32,9 @@ def list_jobs():
     return jsonify([job.as_dict() for job in jobs])
 
 @app.route("/apply/<int:job_id>")
-@login_required
 def apply(job_id):
+    if not current_user.is_authenticated:
+        return redirect(url_for('register'))
     job = Job.query.get_or_404(job_id)
     return render_template('application.html', job=job)
 
