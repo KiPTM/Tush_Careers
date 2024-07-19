@@ -2,15 +2,15 @@ from flask import Flask, render_template, redirect, url_for, flash, request, jso
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_migrate import Migrate
-from extensions import db  # Import db from extensions
-from models import User, Job  # Import models after initializing db
+from extensions import db
+from models import User, Job
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'M!@#$t33178250'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db.init_app(app)  # Initialize db with the app
+db.init_app(app)
 migrate = Migrate(app, db)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
@@ -21,7 +21,7 @@ login_manager.login_message_category = 'info'
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-@app.route("/")
+@app.route('/')
 def home():
     jobs = Job.query.all()
     return render_template('home.html', jobs=jobs, company_name='Kratos')
@@ -46,6 +46,12 @@ def register():
         username = request.form.get('username')
         email = request.form.get('email')
         password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
+
+        if password != confirm_password:
+            flash('Passwords do not match', 'danger')
+            return redirect(url_for('register'))
+
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
         user = User(username=username, email=email, password=hashed_password)
         db.session.add(user)

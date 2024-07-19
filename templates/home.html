@@ -50,25 +50,34 @@
           </p>
         </div>
         <div class="d-none d-md-block col-md-6">
-          <img class="img-fluid" id="banner" src="/static/office view.jpg" style="height=320px;border-radius=4px;">
+          <img class="img-fluid" id="banner" src="/static/office view.jpg" style="height: 320px; border-radius: 4px;">
         </div>
       </div>
       <h2 class="text-center mt-4 mb-4">Available Jobs</h2>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      <div class="alert alert-info">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% endwith %}
+
       <div class="row">
         {% for job in jobs %}
           <div class="col-md-6 job-card">
             <div class="card">
               <div class="card-body">
                 <h5 class="card-title">{{ job.title }}</h5>
-                <p class="card-text">{{ job.description }}</p>
-                <a href="/apply/{{ job.id }}" class="btn btn-primary">Apply</a>
+                <p class="card-text">{{ job.location }}</p>
+                <p class="card-text">Salary: {{ job.salary }}</p>
+                <a href="{{ url_for('apply', job_id=job.id) }}" class="btn btn-primary">Apply</a>
               </div>
             </div>
           </div>
         {% endfor %}
-      </div>
-      <div class="text-center mt-4">
-        <a href="/contact" class="btn btn-primary btn-lg">Contact Us</a>
       </div>
     </div>
     {% include 'footer.html' %}
