@@ -1,7 +1,6 @@
-from flask_sqlalchemy import SQLAlchemy
+# models.py
+from extensions import db
 from flask_login import UserMixin
-
-db = SQLAlchemy()
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -16,7 +15,7 @@ class Job(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     location = db.Column(db.String(100), nullable=False)
-    salary = db.Column(db.String(100), nullable=False)
+    salary = db.Column(db.Integer, nullable=False)
 
     def as_dict(self):
         return {
@@ -28,3 +27,5 @@ class Job(db.Model):
 
     def __repr__(self):
         return f"Job('{self.title}', '{self.location}', '{self.salary}')"
+
+

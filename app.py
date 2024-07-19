@@ -1,45 +1,22 @@
+# app.py
 from flask import Flask, render_template, redirect, url_for, flash, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from flask_migrate import Migrate  # Import Migrate
+from flask_migrate import Migrate
+from extensions import db  # Import db from extensions
+from models import User, Job  # Import models after initializing db
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'M!@#$t33178250'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)  # Initialize Migrate
+db.init_app(app)  # Initialize db with the app
+migrate = Migrate(app, db)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 login_manager.login_message_category = 'info'
-
-class User(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(20), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(60), nullable=False)
-
-    def __repr__(self):
-        return f"User('{self.username}', '{self.email}')"
-
-class Job(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
-    location = db.Column(db.String(100), nullable=False)
-    salary = db.Column(db.String(100), nullable=False)
-
-    def as_dict(self):
-        return {
-            'id': self.id,
-            'title': self.title,
-            'location': self.location,
-            'salary': self.salary
-        }
-
-    def __repr__(self):
-        return f"Job('{self.title}', '{self.location}', '{self.salary}')"
 
 @login_manager.user_loader
 def load_user(user_id):
