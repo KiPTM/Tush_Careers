@@ -30,6 +30,7 @@
         margin-bottom: 15px;
       }
     </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   </head>
   <body>
     <div class="container">
@@ -65,7 +66,9 @@
       {% endif %}
       {% endwith %}
 
-      <div class="row">
+      <input type="text" id="search" placeholder="Search jobs" class="form-control mb-3">
+
+      <div class="row" id="job-listings">
         {% for job in jobs %}
           <div class="col-md-6 job-card">
             <div class="card">
@@ -73,14 +76,64 @@
                 <h5 class="card-title">{{ job.title }}</h5>
                 <p class="card-text">{{ job.location }}</p>
                 <p class="card-text">Salary: {{ job.salary }}</p>
-                <a href="{{ url_for('apply', job_id=job.id) }}" class="btn btn-primary">Apply</a>
+                <button class="btn btn-primary view-job" data-id="{{ job.id }}" data-bs-toggle="modal" data-bs-target="#jobModal">View Details</button>
+                <a href="{{ url_for('apply', job_id=job.id) }}" class="btn btn-success">Apply</a>
               </div>
             </div>
           </div>
         {% endfor %}
       </div>
     </div>
+
+    <!-- Job Details Modal -->
+    <div class="modal fade" id="jobModal" tabindex="-1" aria-labelledby="jobModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="jobModalLabel">Job Details</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body" id="modal-job-details">
+            <!-- Job details will be loaded here via AJAX -->
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     {% include 'footer.html' %}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"></script>
+    <script>
+      $(document).ready(function() {
+        // Search functionality
+        $('#search').on('input', function() {
+          var query = $(this).val().toLowerCase();
+          $('.job-card').each(function() {
+            var title = $(this).find('.card-title').text().toLowerCase();
+            if (title.includes(query)) {
+              $(this).show();
+            } else {
+              $(this).hide();
+            }
+          });
+        });
+
+        // Load job details in modal
+        $('.view-job').on('click', function() {
+          var jobId = $(this).data('id');
+          $.get('/api/jobs/' + jobId, function(data) {
+            var jobDetails = `
+              <h5>${data.title}</h5>
+              <p><strong>Location:</strong> ${data.location}</p>
+              <p><strong>Salary:</strong> ${data.salary}</p>
+              <p><strong>Description:</strong> ${data.description}</p>
+            `;
+            $('#modal-job-details').html(jobDetails);
+          });
+        });
+      });
+    </script>
   </body>
 </html>

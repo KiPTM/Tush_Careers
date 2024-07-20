@@ -31,6 +31,11 @@ def list_jobs():
     jobs = Job.query.all()
     return jsonify([job.as_dict() for job in jobs])
 
+@app.route("/api/jobs/<int:job_id>")
+def get_job(job_id):
+    job = Job.query.get_or_404(job_id)
+    return jsonify(job.as_dict())
+
 @app.route("/apply/<int:job_id>")
 def apply(job_id):
     if not current_user.is_authenticated:
