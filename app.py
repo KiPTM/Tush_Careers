@@ -1,9 +1,10 @@
-from flask import Flask, render_template, redirect, url_for, flash, request, jsonify
+from flask import Flask, render_template, redirect, url_for, flash, request, jsonify, session
 from flask_bcrypt import Bcrypt
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask_migrate import Migrate
 from extensions import db
 from models import User, Job
+import logging
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'M!@#$t33178250'
@@ -39,7 +40,8 @@ def get_job(job_id):
 @app.route("/apply/<int:job_id>")
 def apply(job_id):
     if not current_user.is_authenticated:
-        return redirect(url_for('register'))
+        session['next_job_id'] = job_id
+        return redirect(url_for('login'))
     job = Job.query.get_or_404(job_id)
     return render_template('application.html', job=job)
 
@@ -72,19 +74,25 @@ def login():
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
+        remember = request.form.get('remember') is not None
         user = User.query.filter_by(email=email).first()
         if user and bcrypt.check_password_hash(user.password, password):
-            login_user(user, remember=True)
-            next_page = request.args.get('next')
-            return redirect(next_page) if next_page else redirect(url_for('home'))
+            login_user(user, remember=remember)
+            next_job_id = session.pop('next_job_id', None)
+            if next_job_id:
+                return redirect(url_for('apply', job_id=next_job_id))
+            else:
+                return redirect(url_for('home'))
         else:
             flash('Login Unsuccessful. Please check email and password', 'danger')
     return render_template('login.html')
 
 @app.route("/logout")
+@login_required
 def logout():
     logout_user()
     return redirect(url_for('home'))
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
     app.run(host='0.0.0.0', debug=True)
