@@ -3,8 +3,8 @@ from models import Job
 
 # Create some job entries
 jobs = [
-    Job(title="Software Developer", location="New York", salary=80000),
-    Job(title="Data Scientist", location="San Francisco", salary=120000),
+    Job(title="Software Developer", location="Nairobi", salary= KES 80,000),
+    Job(title="Data Scientist", location="Mombasa", salary=KES 120,000),
     Job(title="Product Manager", location="Austin", salary=100000),
     Job(title="UX Designer", location="Los Angeles", salary=90000),
 ]
