@@ -8,13 +8,14 @@ import logging
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'M!@#$t33178250'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////home/vagrant/Tush_Careers/instance/site.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
 migrate = Migrate(app, db)
 bcrypt = Bcrypt(app)
-login_manager = LoginManager(app)
+login_manager = LoginManager()
+login_manager.init_app(app)
 login_manager.login_view = 'login'
 login_manager.login_message_category = 'info'
 
@@ -24,8 +25,18 @@ def load_user(user_id):
 
 @app.route('/')
 def home():
+    if not current_user.is_authenticated:
+        return redirect(url_for('login'))
     jobs = Job.query.all()
+    print(f"Number of jobs: {len(jobs)}")
+    for job in jobs:
+        print(f"Job: {job.title}, {job.location}, {job.salary}")
     return render_template('home.html', jobs=jobs, company_name='Kratos')
+
+@app.route('/debug')
+def debug():
+    jobs = Job.query.all()
+    return jsonify([job.as_dict() for job in jobs])
 
 @app.route("/api/jobs")
 def list_jobs():
@@ -38,10 +49,8 @@ def get_job(job_id):
     return jsonify(job.as_dict())
 
 @app.route("/apply/<int:job_id>")
+@login_required
 def apply(job_id):
-    if not current_user.is_authenticated:
-        session['next_job_id'] = job_id
-        return redirect(url_for('login'))
     job = Job.query.get_or_404(job_id)
     return render_template('application.html', job=job)
 
@@ -96,3 +105,4 @@ def logout():
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     app.run(host='0.0.0.0', debug=True)
+
