@@ -7,10 +7,16 @@ from models import User, Job
 import logging
 import os
 from werkzeug.utils import secure_filename
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'M!@#$t33178250'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////home/vagrant/Tush_Careers/instance/site.db'
+
+# Use environment variables for configuration
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default_secret_key')  # Default value in case .env is not loaded
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:////home/vagrant/Tush_Careers/instance/site.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Configuration for file uploads
