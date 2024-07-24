@@ -18,27 +18,27 @@
   <body>
     <div class="container">
       <h1 class="text-center mt-4 mb-4">Job Application</h1>
-      <form>
+      <form method="POST" action="{{ url_for('apply', job_id=job.id) }}" enctype="multipart/form-data">
         <!-- Personal Information -->
         <div class="section-header">Personal Information</div>
         <div class="row mb-3">
           <div class="col-md-6">
             <label for="firstName" class="form-label">First Name</label>
-            <input type="text" class="form-control" id="firstName" required>
+            <input type="text" class="form-control" id="firstName" name="first_name" required>
           </div>
           <div class="col-md-6">
             <label for="lastName" class="form-label">Last Name</label>
-            <input type="text" class="form-control" id="lastName" required>
+            <input type="text" class="form-control" id="lastName" name="last_name" required>
           </div>
         </div>
         <div class="row mb-3">
           <div class="col-md-6">
             <label for="email" class="form-label">Email</label>
-            <input type="email" class="form-control" id="email" required>
+            <input type="email" class="form-control" id="email" name="email" required>
           </div>
           <div class="col-md-6">
             <label for="phone" class="form-label">Phone Number</label>
-            <input type="tel" class="form-control" id="phone" required>
+            <input type="tel" class="form-control" id="phone" name="phone" required>
           </div>
         </div>
         <!-- Job Details -->
@@ -46,7 +46,7 @@
         <div class="row mb-3">
           <div class="col-md-12">
             <label for="jobTitle" class="form-label">Job Title</label>
-            <input type="text" class="form-control" id="jobTitle" value="{{ job.title }}" readonly>
+            <input type="text" class="form-control" id="jobTitle" name="job_title" value="{{ job.title }}" readonly>
           </div>
         </div>
         <!-- Education -->
@@ -54,7 +54,7 @@
         <div class="row mb-3">
           <div class="col-md-6">
             <label for="highestEducation" class="form-label">Highest Level of Education</label>
-            <select class="form-control" id="highestEducation" required>
+            <select class="form-control" id="highestEducation" name="highest_education" required>
               <option value="">Select</option>
               <option value="highschool">High School</option>
               <option value="bachelor">Bachelor's Degree</option>
@@ -64,7 +64,7 @@
           </div>
           <div class="col-md-6">
             <label for="institution" class="form-label">Institution</label>
-            <input type="text" class="form-control" id="institution" required>
+            <input type="text" class="form-control" id="institution" name="institution" required>
           </div>
         </div>
         <!-- Work Experience -->
@@ -72,21 +72,21 @@
         <div class="row mb-3">
           <div class="col-md-6">
             <label for="companyName" class="form-label">Company Name</label>
-            <input type="text" class="form-control" id="companyName" required>
+            <input type="text" class="form-control" id="companyName" name="company_name" required>
           </div>
           <div class="col-md-6">
             <label for="jobTitleExperience" class="form-label">Job Title</label>
-            <input type="text" class="form-control" id="jobTitleExperience" required>
+            <input type="text" class="form-control" id="jobTitleExperience" name="job_title_experience" required>
           </div>
         </div>
         <div class="row mb-3">
           <div class="col-md-6">
             <label for="startDate" class="form-label">Start Date</label>
-            <input type="date" class="form-control" id="startDate" required>
+            <input type="date" class="form-control" id="startDate" name="start_date" required>
           </div>
           <div class="col-md-6">
             <label for="endDate" class="form-label">End Date</label>
-            <input type="date" class="form-control" id="endDate">
+            <input type="date" class="form-control" id="endDate" name="end_date">
           </div>
         </div>
         <!-- Additional Information -->
@@ -94,13 +94,13 @@
         <div class="row mb-3">
           <div class="col-md-12">
             <label for="coverLetter" class="form-label">Cover Letter</label>
-            <textarea class="form-control" id="coverLetter" rows="5" required></textarea>
+            <textarea class="form-control" id="coverLetter" name="cover_letter" rows="5" required></textarea>
           </div>
         </div>
         <div class="row mb-3">
           <div class="col-md-12">
             <label for="resume" class="form-label">Upload Resume</label>
-            <input type="file" class="form-control" id="resume" required>
+            <input type="file" class="form-control" id="resume" name="resume" required>
           </div>
         </div>
         <!-- Submit Button -->
@@ -113,3 +113,4 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"></script>
   </body>
 </html>
+

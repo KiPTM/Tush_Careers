@@ -5,11 +5,17 @@ from flask_migrate import Migrate
 from extensions import db
 from models import User, Job
 import logging
+import os
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'M!@#$t33178250'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////home/vagrant/Tush_Careers/instance/site.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Configuration for file uploads
+app.config['UPLOAD_FOLDER'] = '/home/vagrant/Tush_Careers/uploads'
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB limit
 
 db.init_app(app)
 migrate = Migrate(app, db)
@@ -25,36 +31,53 @@ def load_user(user_id):
 
 @app.route('/')
 def home():
-    if not current_user.is_authenticated:
-        return redirect(url_for('login'))
     jobs = Job.query.all()
-    print(f"Number of jobs: {len(jobs)}")
-    for job in jobs:
-        print(f"Job: {job.title}, {job.location}, {job.salary}")
     return render_template('home.html', jobs=jobs, company_name='Kratos')
 
-@app.route('/debug')
-def debug():
-    jobs = Job.query.all()
-    return jsonify([job.as_dict() for job in jobs])
-
-@app.route("/api/jobs")
-def list_jobs():
-    jobs = Job.query.all()
-    return jsonify([job.as_dict() for job in jobs])
-
-@app.route("/api/jobs/<int:job_id>")
-def get_job(job_id):
+@app.route('/job/<int:job_id>')
+def job_detail(job_id):
     job = Job.query.get_or_404(job_id)
-    return jsonify(job.as_dict())
+    return render_template('job_detail.html', job=job)
 
-@app.route("/apply/<int:job_id>")
+@app.route('/apply/<int:job_id>', methods=['GET', 'POST'])
 @login_required
 def apply(job_id):
     job = Job.query.get_or_404(job_id)
+    if request.method == 'POST':
+        first_name = request.form.get('first_name')
+        last_name = request.form.get('last_name')
+        email = request.form.get('email')
+        phone = request.form.get('phone')
+        highest_education = request.form.get('highest_education')
+        institution = request.form.get('institution')
+        company_name = request.form.get('company_name')
+        job_title_experience = request.form.get('job_title_experience')
+        start_date = request.form.get('start_date')
+        end_date = request.form.get('end_date')
+        cover_letter = request.form.get('cover_letter')
+
+        if 'resume' not in request.files:
+            flash('No resume part', 'danger')
+            return redirect(request.url)
+        resume = request.files['resume']
+        if resume.filename == '':
+            flash('No selected file', 'danger')
+            return redirect(request.url)
+        if resume and allowed_file(resume.filename):
+            filename = secure_filename(resume.filename)
+            resume.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+        # Save the form data to the database or perform other actions
+        # Example: Save to a new Application model (you would need to create this model)
+        # application = Application(first_name=first_name, last_name=last_name, ...)
+        # db.session.add(application)
+        # db.session.commit()
+
+        flash('Your application has been submitted!', 'success')
+        return redirect(url_for('home'))
     return render_template('application.html', job=job)
 
-@app.route("/register", methods=['GET', 'POST'])
+@app.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('home'))
@@ -76,7 +99,7 @@ def register():
         return redirect(url_for('login'))
     return render_template('register.html')
 
-@app.route("/login", methods=['GET', 'POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('home'))
@@ -96,11 +119,29 @@ def login():
             flash('Login Unsuccessful. Please check email and password', 'danger')
     return render_template('login.html')
 
-@app.route("/logout")
+@app.route('/logout')
 @login_required
 def logout():
     logout_user()
     return redirect(url_for('home'))
+
+@app.route('/debug')
+def debug():
+    jobs = Job.query.all()
+    return jsonify([job.as_dict() for job in jobs])
+
+@app.route('/api/jobs')
+def list_jobs():
+    jobs = Job.query.all()
+    return jsonify([job.as_dict() for job in jobs])
+
+@app.route('/api/jobs/<int:job_id>')
+def get_job(job_id):
+    job = Job.query.get_or_404(job_id)
+    return jsonify(job.as_dict())
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'pdf', 'doc', 'docx'}
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
