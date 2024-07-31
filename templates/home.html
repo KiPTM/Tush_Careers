@@ -41,6 +41,15 @@
         0% { opacity: 0; }
         100% { opacity: 1; }
       }
+      .navbar-nav .nav-link {
+        padding: 0 15px;
+      }
+      .navbar-nav .nav-item {
+        margin: 0 5px;
+      }
+      .alert {
+        margin-bottom: 20px;
+      }
     </style>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   </head>
@@ -48,7 +57,7 @@
     <div class="container">
       <h1 class="text-center mt-4 mb-4 fade-in">{{ company_name }} Careers</h1>
       <div class="position-relative">
-        <img class="img-fluid fade-in" id="banner" src="https://6878b222-75aa-4be4-b92f-6cbe91fdae09-00-1trbxj7ob6fbz.janeway.replit.dev//static/Banner.jpg" >
+        <img class="img-fluid fade-in" id="banner" src="https://6878b222-75aa-4be4-b92f-6cbe91fdae09-00-1trbxj7ob6fbz.janeway.replit.dev//static/Banner.jpg" alt="Banner Image">
         <div id="banner-text" class="fade-in">Welcome to {{ company_name }}</div>
       </div>
       <h2 class="text-center mt-4 mb-4 fade-in">About Kratos</h2>
@@ -59,7 +68,7 @@
           </p>
         </div>
         <div class="d-none d-md-block col-md-6">
-          <img class="img-fluid fade-in" id="banner" src="/static/office view.jpg" style="height: 320px; border-radius: 4px;">
+          <img class="img-fluid fade-in" id="banner" src="/static/office view.jpg" style="height: 320px; border-radius: 4px;" alt="Office View">
         </div>
       </div>
       <h2 class="text-center mt-4 mb-4 fade-in">Available Jobs</h2>
@@ -145,3 +154,4 @@
     </script>
   </body>
 </html>
+

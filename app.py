@@ -8,6 +8,7 @@ import logging
 import os
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
+from itsdangerous import URLSafeTimedSerializer
 
 # Load environment variables from .env file
 load_dotenv()
@@ -16,7 +17,7 @@ app = Flask(__name__)
 
 # Use environment variables for configuration
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default_secret_key')  # Default value in case .env is not loaded
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:////home/vagrant/Tush_Careers/instance/site.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://admin:your_password@localhost/site_db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Configuration for file uploads
@@ -30,6 +31,9 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 login_manager.login_message_category = 'info'
+
+# Initialize the URLSafeTimedSerializer
+serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -130,6 +134,51 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('home'))
+
+@app.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        user = User.query.filter_by(email=email).first()
+        if user:
+            token = serializer.dumps(user.email, salt='password-reset-salt')
+            reset_url = url_for('reset_password', token=token, _external=True)
+            # Send the reset link via email
+            # Example: send_email(user.email, reset_url)
+            flash('A password reset link has been sent to your email address.', 'info')
+        else:
+            flash('Email address not found.', 'danger')
+        return redirect(url_for('forgot_password'))
+    return render_template('forgot_password.html')
+
+@app.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    try:
+        email = serializer.loads(token, salt='password-reset-salt', max_age=3600)
+    except:
+        flash('The password reset link is invalid or has expired.', 'danger')
+        return redirect(url_for('forgot_password'))
+    
+    if request.method == 'POST':
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
+
+        if password != confirm_password:
+            flash('Passwords do not match', 'danger')
+            return redirect(url_for('reset_password', token=token))
+
+        user = User.query.filter_by(email=email).first()
+        if user:
+            hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+            user.password = hashed_password
+            db.session.commit()
+            flash('Your password has been updated!', 'success')
+            return redirect(url_for('login'))
+        else:
+            flash('User not found.', 'danger')
+            return redirect(url_for('forgot_password'))
+    
+    return render_template('reset_password.html', token=token)
 
 @app.route('/debug')
 def debug():
